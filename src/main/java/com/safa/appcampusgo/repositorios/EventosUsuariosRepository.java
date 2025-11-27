@@ -14,4 +14,7 @@ public interface EventosUsuariosRepository extends JpaRepository<EventosUsuarios
 
     // Lista inscripciones por usuario y estado (útil para recordatorios).
     List<EventosUsuarios> findByIdUsuarioIdAndEstado(Integer usuarioId, Estado estado);
+    
+    // Lista inscripciones por usuario
+    List<EventosUsuarios> findByIdUsuarioId(Integer usuarioId);
 }
