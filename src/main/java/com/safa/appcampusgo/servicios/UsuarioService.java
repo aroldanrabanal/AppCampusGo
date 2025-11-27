@@ -42,4 +42,8 @@ public class UsuarioService {
     public Usuarios obtenerUsuarioMasActivo() {
         return usuarioRepository.findUsuarioMasActivo();
     }
+
+    public Optional<Usuarios> obtenerPorId(Integer id) {
+        return usuarioRepository.findById(id);
+    }
 }
