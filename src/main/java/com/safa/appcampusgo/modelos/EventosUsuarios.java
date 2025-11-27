@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table (name = "eventos_usuarios")
+@Table(name = "eventos_usuarios")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,7 +17,9 @@ public class EventosUsuarios {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String estado;
+    // Cambiado: Usa enum para estado (ASISTENTE, INTERESADO). Almacena como STRING en BD.
+    @Enumerated(EnumType.STRING)
+    private Estado estado;  // Crea un enum Estado { ASISTENTE, INTERESADO }
 
     @ManyToOne
     @JoinColumn(name = "id_usuarios")

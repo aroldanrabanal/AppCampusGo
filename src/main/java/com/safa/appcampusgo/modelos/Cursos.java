@@ -22,6 +22,6 @@ public class Cursos {
     private String grupo;
 
     @OneToMany(mappedBy = "curso")
-
+    @JsonIgnore
     private List<Usuarios> usuarios = new ArrayList<>();
 }

@@ -24,15 +24,19 @@ public class Usuarios {
     private String apellidos;
     private String email;
 
+    @Enumerated(EnumType.STRING)
+    private Rol rol;
+
     @ManyToOne
-    @JoinColumn(name = "ID_CURSO", nullable = false)
+    @JoinColumn(name = "ID_CURSO", nullable = true)
     private Cursos curso;
 
+    // Agrego @JsonIgnore para evitar recursion infinita en JSON.
     @OneToMany(mappedBy = "creador")
+    @JsonIgnore
     private List<Evento> eventosCreados;
 
     @OneToMany(mappedBy = "idUsuario")
+    @JsonIgnore
     private Set<EventosUsuarios> eventosUsuarios = new HashSet<>();
-
-
 }

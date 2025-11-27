@@ -1,5 +1,6 @@
 package com.safa.appcampusgo.modelos;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,12 +26,14 @@ public class Evento {
     private LocalDateTime fecha;
     private Float precio;
     private String lugar;
+    private String categoria;
+    private String institucion;
 
     @ManyToOne
     @JoinColumn(name = "ID_CREADOR", nullable = false)
     private Usuarios creador;
 
     @OneToMany(mappedBy = "idEvento")
+    @JsonIgnore
     private Set<EventosUsuarios> eventosUsuarios = new HashSet<>();
-
 }
