@@ -1,49 +1,60 @@
 package com.safa.appcampusgo.servicios;
 
+import com.safa.appcampusgo.dtos.UsuariosDTO;
+import com.safa.appcampusgo.mappers.UsuariosMapper;
 import com.safa.appcampusgo.modelos.Evento;
-import com.safa.appcampusgo.modelos.Rol;
 import com.safa.appcampusgo.modelos.Usuarios;
+import com.safa.appcampusgo.repositorios.CursoRepository;
 import com.safa.appcampusgo.repositorios.UsuarioRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
+    private final CursoRepository cursoRepository;  // Para asignar curso completo
+    private final UsuariosMapper usuariosMapper;    // Inyectado
 
-    public List<Usuarios> listarUsuarios() {
-        return usuarioRepository.findAll();
+    public List<UsuariosDTO> listarUsuarios() {
+        return usuarioRepository.findAll().stream()
+                .map(usuariosMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    // Registrar usuario (endpoint 1: estudiante/profesor).
-    public Usuarios registrarUsuario(Usuarios usuario) {
-        // Validación: Email único.
-        if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
+    public UsuariosDTO registrarUsuario(UsuariosDTO dto) {
+        Usuarios entity = usuariosMapper.toEntity(dto);
+        // Asigna curso completo para evitar nulls
+        if (dto.getCursoId() != null) {
+            entity.setCurso(cursoRepository.findById(dto.getCursoId()).orElseThrow(() -> new IllegalArgumentException("Curso no encontrado")));
+        }
+        if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email ya registrado");
         }
-        return usuarioRepository.save(usuario);
+        Usuarios saved = usuarioRepository.save(entity);
+        return usuariosMapper.toDTO(saved);
     }
 
-    // Buscar por email (para auth/login en frontend).
-    public Optional<Usuarios> obtenerPorEmail(String email) {
-        return usuarioRepository.findByEmail(email);
+    public Optional<UsuariosDTO> obtenerPorId(Integer id) {
+        return usuarioRepository.findById(id).map(usuariosMapper::toDTO);
     }
 
-    // Eventos participados por usuario (endpoint 8).
+    public Optional<UsuariosDTO> obtenerPorEmail(String email) {
+        return usuarioRepository.findByEmail(email).map(usuariosMapper::toDTO);
+    }
+
+    // Para endpoint 8: Eventos por usuario
     public List<Evento> obtenerEventosPorUsuario(Integer usuarioId) {
         return usuarioRepository.findEventosByUsuarioId(usuarioId);
     }
 
-    // Usuario más activo (endpoint 10: publicados + participados).
-    public Usuarios obtenerUsuarioMasActivo() {
-        return usuarioRepository.findUsuarioMasActivo();
-    }
-
-    public Optional<Usuarios> obtenerPorId(Integer id) {
-        return usuarioRepository.findById(id);
+    // Para endpoint 10: Usuario más activo (devuelve DTO)
+    public UsuariosDTO obtenerUsuarioMasActivo() {
+        Usuarios entity = usuarioRepository.findUsuarioMasActivo();
+        return usuariosMapper.toDTO(entity);
     }
 }

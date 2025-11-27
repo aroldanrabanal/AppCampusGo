@@ -1,5 +1,7 @@
 package com.safa.appcampusgo.servicios;
 
+import com.safa.appcampusgo.dtos.CursosDTO;
+import com.safa.appcampusgo.mappers.CursosMapper;
 import com.safa.appcampusgo.modelos.Cursos;
 import com.safa.appcampusgo.repositorios.CursoRepository;
 import lombok.AllArgsConstructor;
@@ -7,28 +9,27 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class CursoService {
     private final CursoRepository cursoRepository;
+    private final CursosMapper cursosMapper;  // Inyectado
 
-    public List<Cursos> listarCursos() {
-        return cursoRepository.findAll();
+    public List<CursosDTO> listarCursos() {
+        return cursoRepository.findAll().stream()
+                .map(cursosMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    // Crear curso (para admins/profesores en futuro).
-    public Cursos crearCurso(Cursos curso) {
-        // Validación simple: No duplicados por nombre/grupo.
-        Optional<Cursos> existente = cursoRepository.findByNombreAndGrupo(curso.getNombre(), curso.getGrupo());
-        if (existente.isPresent()) {
-            throw new IllegalArgumentException("Curso ya existe");
-        }
-        return cursoRepository.save(curso);
+    public CursosDTO crearCurso(CursosDTO dto) {
+        Cursos entity = cursosMapper.toEntity(dto);
+        Cursos saved = cursoRepository.save(entity);
+        return cursosMapper.toDTO(saved);
     }
 
-    // Buscar por ID (para detalles).
-    public Optional<Cursos> obtenerCursoPorId(Integer id) {
-        return cursoRepository.findById(id);
+    public Optional<CursosDTO> obtenerCursoPorId(Integer id) {
+        return cursoRepository.findById(id).map(cursosMapper::toDTO);
     }
 }

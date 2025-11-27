@@ -1,6 +1,6 @@
 package com.safa.appcampusgo.controladores;
 
-import com.safa.appcampusgo.modelos.Evento;
+import com.safa.appcampusgo.dtos.EventoDTO;
 import com.safa.appcampusgo.servicios.EventoService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,33 +20,29 @@ public class EventoController {
 
     private final EventoService eventoService;
 
-    // Crear evento (endpoint 2).
     @PostMapping
-    public ResponseEntity<Evento> crearEvento(@RequestBody Evento evento, @RequestParam Integer creadorId) {
-        Evento creado = eventoService.crearEvento(evento, creadorId);
+    public ResponseEntity<EventoDTO> crearEvento(@RequestBody EventoDTO dto, @RequestParam Integer creadorId) {
+        EventoDTO creado = eventoService.crearEvento(dto, creadorId);
         return new ResponseEntity<>(creado, HttpStatus.CREATED);
     }
 
-    // Lista con filtros (endpoint 3: usa @RequestParam para opcionales, Pageable para paginación en Ionic).
     @GetMapping
-    public Page<Evento> listarEventos(@RequestParam(required = false) LocalDateTime fecha,
-                                      @RequestParam(required = false) String categoria,
-                                      @RequestParam(required = false) String institucion,
-                                      @PageableDefault(size = 10) Pageable pageable) {
+    public Page<EventoDTO> listarEventos(@RequestParam(required = false) LocalDateTime fecha,
+                                         @RequestParam(required = false) String categoria,
+                                         @RequestParam(required = false) String institucion,
+                                         @PageableDefault(size = 10) Pageable pageable) {
         return eventoService.listarEventosFiltrados(fecha, categoria, institucion, pageable);
     }
 
-    // Detalles (endpoint 4).
     @GetMapping("/{id}")
-    public ResponseEntity<Evento> obtenerPorId(@PathVariable Integer id) {
-        Optional<Evento> evento = eventoService.obtenerEventoPorId(id);
-        return evento.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<EventoDTO> obtenerPorId(@PathVariable Integer id) {
+        Optional<EventoDTO> dto = eventoService.obtenerEventoPorId(id);
+        return dto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Modificar (endpoint 5).
     @PutMapping("/{id}")
-    public ResponseEntity<Evento> modificarEvento(@PathVariable Integer id, @RequestBody Evento updates) {
-        Evento modificado = eventoService.modificarEvento(id, updates);
+    public ResponseEntity<EventoDTO> modificarEvento(@PathVariable Integer id, @RequestBody EventoDTO dto) {
+        EventoDTO modificado = eventoService.modificarEvento(id, dto);
         return ResponseEntity.ok(modificado);
     }
 }

@@ -1,6 +1,9 @@
 package com.safa.appcampusgo.servicios;
 
+import com.safa.appcampusgo.dtos.EventoDTO;
+import com.safa.appcampusgo.mappers.EventoMapper;
 import com.safa.appcampusgo.modelos.Evento;
+import com.safa.appcampusgo.modelos.Rol;
 import com.safa.appcampusgo.modelos.Usuarios;
 import com.safa.appcampusgo.repositorios.EventoRepository;
 import com.safa.appcampusgo.repositorios.UsuarioRepository;
@@ -12,46 +15,49 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class EventoService {
     private final EventoRepository eventoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final EventoMapper eventoMapper;  // Inyectado
 
-    // Crear evento (endpoint 2).
-    public Evento crearEvento(Evento evento, Integer creadorId) {
+    public EventoDTO crearEvento(EventoDTO dto, Integer creadorId) {
         Optional<Usuarios> creador = usuarioRepository.findById(creadorId);
-        if (creador.isEmpty()) {
-            throw new IllegalArgumentException("No esta definido el usuario");
+        if (creador.isEmpty() || !creador.get().getRol().equals(Rol.PROFESOR)) {
+            throw new IllegalArgumentException("Solo profesores pueden crear eventos");
         }
-        evento.setCreador(creador.get());
-        return eventoRepository.save(evento);
+        Evento entity = eventoMapper.toEntity(dto);
+        entity.setCreador(creador.get());
+        Evento saved = eventoRepository.save(entity);
+        return eventoMapper.toDTO(saved);
     }
 
-    // Lista con filtros (endpoint 3: fecha, categoria, institucion).
-    public Page<Evento> listarEventosFiltrados(LocalDateTime fecha, String categoria, String institucion, Pageable pageable) {
-        return eventoRepository.findByFiltros(fecha, categoria, institucion, pageable);
+    public Page<EventoDTO> listarEventosFiltrados(LocalDateTime fecha, String categoria, String institucion, Pageable pageable) {
+        return eventoRepository.findByFiltros(fecha, categoria, institucion, pageable)
+                .map(eventoMapper::toDTO);
     }
 
-    // Detalles de evento (endpoint 4).
-    public Optional<Evento> obtenerEventoPorId(Integer id) {
-        return eventoRepository.findById(id);
+    public Optional<EventoDTO> obtenerEventoPorId(Integer id) {
+        return eventoRepository.findById(id).map(eventoMapper::toDTO);
     }
 
-    // Modificar evento (endpoint 5: horario, lugar, desc).
-    public Evento modificarEvento(Integer id, Evento updates) {
+    public EventoDTO modificarEvento(Integer id, EventoDTO dto) {
         Evento existente = eventoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Evento no encontrado"));
-        // Actualiza campos (evita sobreescribir creador).
-        if (updates.getNombre() != null) existente.setNombre(updates.getNombre());
-        if (updates.getDescripcion() != null) existente.setDescripcion(updates.getDescripcion());
-        // ... para mas campos es mas de lo mismo
-        return eventoRepository.save(existente);
+        // Actualiza campos con mapper (usa @MappingTarget si expandes para merges avanzados, PDF p.16)
+        existente.setNombre(dto.getNombre());
+        existente.setDescripcion(dto.getDescripcion());
+        // ... similar para otros
+        Evento saved = eventoRepository.save(existente);
+        return eventoMapper.toDTO(saved);
     }
 
-    // Top 5 eventos con más asistentes (endpoint 9).
-    public List<Evento> obtenerTop5Eventos() {
+    public List<EventoDTO> obtenerTop5Eventos() {
         List<Object[]> results = eventoRepository.findTop5EventosConMasAsistentes();
-        return results.stream().limit(5).map(result -> (Evento) result[0]).toList();
+        return results.stream().limit(5)
+                .map(result -> eventoMapper.toDTO((Evento) result[0]))
+                .collect(Collectors.toList());
     }
 }

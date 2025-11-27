@@ -1,6 +1,6 @@
 package com.safa.appcampusgo.controladores;
 
-import com.safa.appcampusgo.modelos.Galeria;
+import com.safa.appcampusgo.dtos.GaleriaDTO;
 import com.safa.appcampusgo.servicios.GaleriaService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,18 +18,16 @@ public class GaleriaController {
 
     private final GaleriaService galeriaService;
 
-    // Subir multimedia (endpoint 7: usa Multipart para file).
     @PostMapping
-    public ResponseEntity<Galeria> subirMultimedia(@PathVariable Integer eventoId,
-                                                   @RequestPart("file") MultipartFile file,
-                                                   @RequestParam(required = false) String descripcion) throws IOException {
-        Galeria subida = galeriaService.subirMultimedia(eventoId, file, descripcion);
-        return new ResponseEntity<>(subida, HttpStatus.CREATED);
+    public ResponseEntity<GaleriaDTO> subirMultimedia(@PathVariable Integer eventoId,
+                                                      @RequestPart("file") MultipartFile file,
+                                                      @RequestParam(required = false) String descripcion) throws IOException {
+        GaleriaDTO dto = galeriaService.subirMultimedia(eventoId, file, descripcion);
+        return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
 
-    // Lista por evento.
     @GetMapping
-    public List<Galeria> obtenerGaleria(@PathVariable Integer eventoId) {
+    public List<GaleriaDTO> obtenerGaleria(@PathVariable Integer eventoId) {
         return galeriaService.obtenerGaleriaPorEvento(eventoId);
     }
 }

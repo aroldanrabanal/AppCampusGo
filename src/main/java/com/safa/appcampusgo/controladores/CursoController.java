@@ -1,6 +1,6 @@
 package com.safa.appcampusgo.controladores;
 
-import com.safa.appcampusgo.modelos.Cursos;
+import com.safa.appcampusgo.dtos.CursosDTO;
 import com.safa.appcampusgo.servicios.CursoService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,21 +18,19 @@ public class CursoController {
     private final CursoService cursoService;
 
     @GetMapping("/all")
-    public List<Cursos> buscarTodos() {
+    public List<CursosDTO> buscarTodos() {
         return cursoService.listarCursos();
     }
 
-    // Usa servicio para validaciones.
     @PostMapping
-    public ResponseEntity<Cursos> crearCurso(@RequestBody Cursos curso) {
-        Cursos creado = cursoService.crearCurso(curso);
+    public ResponseEntity<CursosDTO> crearCurso(@RequestBody CursosDTO dto) {
+        CursosDTO creado = cursoService.crearCurso(dto);
         return new ResponseEntity<>(creado, HttpStatus.CREATED);
     }
 
-    // Detalles por ID.
     @GetMapping("/{id}")
-    public ResponseEntity<Cursos> obtenerPorId(@PathVariable Integer id) {
-        Optional<Cursos> curso = cursoService.obtenerCursoPorId(id);
-        return curso.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<CursosDTO> obtenerPorId(@PathVariable Integer id) {
+        Optional<CursosDTO> dto = cursoService.obtenerCursoPorId(id);
+        return dto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
