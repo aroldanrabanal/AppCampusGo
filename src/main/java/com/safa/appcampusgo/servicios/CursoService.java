@@ -2,7 +2,6 @@ package com.safa.appcampusgo.servicios;
 
 import com.safa.appcampusgo.dtos.CursosDTO;
 import com.safa.appcampusgo.mappers.CursosMapper;
-import com.safa.appcampusgo.modelos.Cursos;
 import com.safa.appcampusgo.repositorios.CursoRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CursoService {
     private final CursoRepository cursoRepository;
-    private final CursosMapper cursosMapper;  // Inyectado
+    private final CursosMapper cursosMapper;
 
     public List<CursosDTO> listarCursos() {
         return cursoRepository.findAll().stream()
@@ -24,9 +23,7 @@ public class CursoService {
     }
 
     public CursosDTO crearCurso(CursosDTO dto) {
-        Cursos entity = cursosMapper.toEntity(dto);
-        Cursos saved = cursoRepository.save(entity);
-        return cursosMapper.toDTO(saved);
+        return cursosMapper.toDTO(cursoRepository.save(cursosMapper.toEntity(dto)));
     }
 
     public Optional<CursosDTO> obtenerCursoPorId(Integer id) {

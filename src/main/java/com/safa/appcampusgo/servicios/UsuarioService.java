@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
-    private final CursoRepository cursoRepository;  // Para asignar curso completo
-    private final UsuariosMapper usuariosMapper;    // Inyectado
+    private final CursoRepository cursoRepository;
+    private final UsuariosMapper usuariosMapper;
 
     public List<UsuariosDTO> listarUsuarios() {
         return usuarioRepository.findAll().stream()
@@ -27,16 +27,14 @@ public class UsuarioService {
     }
 
     public UsuariosDTO registrarUsuario(UsuariosDTO dto) {
-        Usuarios entity = usuariosMapper.toEntity(dto);
-        // Asigna curso completo para evitar nulls
-        if (dto.getCursoId() != null) {
-            entity.setCurso(cursoRepository.findById(dto.getCursoId()).orElseThrow(() -> new IllegalArgumentException("Curso no encontrado")));
-        }
         if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email ya registrado");
         }
-        Usuarios saved = usuarioRepository.save(entity);
-        return usuariosMapper.toDTO(saved);
+        Usuarios entity = usuariosMapper.toEntity(dto);
+        if (dto.getCursoId() != null) {
+            entity.setCurso(cursoRepository.findById(dto.getCursoId()).orElseThrow());
+        }
+        return usuariosMapper.toDTO(usuarioRepository.save(entity));
     }
 
     public Optional<UsuariosDTO> obtenerPorId(Integer id) {
@@ -47,14 +45,15 @@ public class UsuarioService {
         return usuarioRepository.findByEmail(email).map(usuariosMapper::toDTO);
     }
 
-    // Para endpoint 8: Eventos por usuario
     public List<Evento> obtenerEventosPorUsuario(Integer usuarioId) {
         return usuarioRepository.findEventosByUsuarioId(usuarioId);
     }
 
-    // Para endpoint 10: Usuario más activo (devuelve DTO)
     public UsuariosDTO obtenerUsuarioMasActivo() {
-        Usuarios entity = usuarioRepository.findUsuarioMasActivo();
-        return usuariosMapper.toDTO(entity);
+        List<Usuarios> list = usuarioRepository.findUsuariosMasActivos();
+        if (list.isEmpty()) {
+            throw new IllegalArgumentException("No hay usuarios activos");
+        }
+        return usuariosMapper.toDTO(list.getFirst());
     }
 }

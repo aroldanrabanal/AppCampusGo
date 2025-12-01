@@ -22,8 +22,7 @@ public class GaleriaController {
     public ResponseEntity<GaleriaDTO> subirMultimedia(@PathVariable Integer eventoId,
                                                       @RequestPart("file") MultipartFile file,
                                                       @RequestParam(required = false) String descripcion) throws IOException {
-        GaleriaDTO dto = galeriaService.subirMultimedia(eventoId, file, descripcion);
-        return new ResponseEntity<>(dto, HttpStatus.CREATED);
+        return new ResponseEntity<>(galeriaService.subirMultimedia(eventoId, file, descripcion), HttpStatus.CREATED);
     }
 
     @GetMapping

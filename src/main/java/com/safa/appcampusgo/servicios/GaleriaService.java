@@ -21,23 +21,21 @@ import java.util.stream.Collectors;
 public class GaleriaService {
     private final GaleriaRepository galeriaRepository;
     private final EventoRepository eventoRepository;
-    private final GaleriaMapper galeriaMapper;  // Inyectado
+    private final GaleriaMapper galeriaMapper;
 
     public GaleriaDTO subirMultimedia(Integer eventoId, MultipartFile file, String descripcion) throws IOException {
-        Evento evento = eventoRepository.findById(eventoId).orElseThrow(() -> new IllegalArgumentException("Evento no encontrado"));
+        Evento evento = eventoRepository.findById(eventoId).orElseThrow();
         String uploadDir = "uploads/" + eventoId;
         new File(uploadDir).mkdirs();
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         file.transferTo(new File(uploadDir + "/" + fileName));
         String url = "/uploads/" + eventoId + "/" + fileName;
-
         Galeria entity = Galeria.builder()
                 .evento(evento)
                 .url(url)
                 .descripcion(descripcion)
                 .build();
-        Galeria saved = galeriaRepository.save(entity);
-        return galeriaMapper.toDTO(saved);
+        return galeriaMapper.toDTO(galeriaRepository.save(entity));
     }
 
     public List<GaleriaDTO> obtenerGaleriaPorEvento(Integer eventoId) {

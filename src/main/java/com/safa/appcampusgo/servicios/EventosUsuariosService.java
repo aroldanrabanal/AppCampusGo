@@ -21,21 +21,20 @@ public class EventosUsuariosService {
     private final EventosUsuariosRepository eventosUsuariosRepository;
     private final UsuarioRepository usuarioRepository;
     private final EventoRepository eventoRepository;
-    private final EventosUsuariosMapper eventosUsuariosMapper;  // Inyectado
+    private final EventosUsuariosMapper eventosUsuariosMapper;
 
     public EventosUsuariosDTO inscribirUsuario(Integer usuarioId, Integer eventoId, Estado estado) {
-        Usuarios usuario = usuarioRepository.findById(usuarioId).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
-        Evento evento = eventoRepository.findById(eventoId).orElseThrow(() -> new IllegalArgumentException("Evento no encontrado"));
         if (eventosUsuariosRepository.findByIdUsuarioIdAndIdEventoId(usuarioId, eventoId).isPresent()) {
             throw new IllegalArgumentException("Ya inscrito");
         }
+        Usuarios usuario = usuarioRepository.findById(usuarioId).orElseThrow();
+        Evento evento = eventoRepository.findById(eventoId).orElseThrow();
         EventosUsuarios entity = EventosUsuarios.builder()
                 .idUsuario(usuario)
                 .idEvento(evento)
                 .estado(estado)
                 .build();
-        EventosUsuarios saved = eventosUsuariosRepository.save(entity);
-        return eventosUsuariosMapper.toDTO(saved);
+        return eventosUsuariosMapper.toDTO(eventosUsuariosRepository.save(entity));
     }
 
     public List<EventosUsuariosDTO> obtenerInscripcionesPorUsuario(Integer usuarioId) {

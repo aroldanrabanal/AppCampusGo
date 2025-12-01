@@ -42,7 +42,6 @@ public class EventoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<EventoDTO> modificarEvento(@PathVariable Integer id, @RequestBody EventoDTO dto) {
-        EventoDTO modificado = eventoService.modificarEvento(id, dto);
-        return ResponseEntity.ok(modificado);
+        return ResponseEntity.ok(eventoService.modificarEvento(id, dto));
     }
 }

@@ -25,8 +25,7 @@ public class UsuarioController {
 
     @PostMapping
     public ResponseEntity<UsuariosDTO> registrarUsuario(@RequestBody UsuariosDTO dto) {
-        UsuariosDTO registrado = usuarioService.registrarUsuario(dto);
-        return new ResponseEntity<>(registrado, HttpStatus.CREATED);
+        return new ResponseEntity<>(usuarioService.registrarUsuario(dto), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -36,7 +35,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}/eventos")
-    public List<Evento> obtenerEventosPorUsuario(@PathVariable Integer id) {  // Cambia a EventoDTO si integras su mapper
+    public List<Evento> obtenerEventosPorUsuario(@PathVariable Integer id) {
         return usuarioService.obtenerEventosPorUsuario(id);
     }
 }

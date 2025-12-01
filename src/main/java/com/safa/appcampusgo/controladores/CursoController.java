@@ -24,8 +24,7 @@ public class CursoController {
 
     @PostMapping
     public ResponseEntity<CursosDTO> crearCurso(@RequestBody CursosDTO dto) {
-        CursosDTO creado = cursoService.crearCurso(dto);
-        return new ResponseEntity<>(creado, HttpStatus.CREATED);
+        return new ResponseEntity<>(cursoService.crearCurso(dto), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

@@ -27,5 +27,5 @@ public interface UsuarioRepository extends JpaRepository<Usuarios, Integer> {
             "LEFT JOIN u.eventosUsuarios eu " +
             "GROUP BY u " +
             "ORDER BY (COUNT(ec) + COUNT(eu)) DESC")
-    Usuarios findUsuarioMasActivo();
+    List<Usuarios> findUsuariosMasActivos();;
 }

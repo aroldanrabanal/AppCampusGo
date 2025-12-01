@@ -22,22 +22,18 @@ import java.util.stream.Collectors;
 public class EventoService {
     private final EventoRepository eventoRepository;
     private final UsuarioRepository usuarioRepository;
-    private final EventoMapper eventoMapper;  // Inyectado
+    private final EventoMapper eventoMapper;
 
     public EventoDTO crearEvento(EventoDTO dto, Integer creadorId) {
-        Optional<Usuarios> creador = usuarioRepository.findById(creadorId);
-        if (creador.isEmpty() || !creador.get().getRol().equals(Rol.PROFESOR)) {
-            throw new IllegalArgumentException("Solo profesores pueden crear eventos");
-        }
+        Usuarios creador = usuarioRepository.findById(creadorId).orElseThrow();
         Evento entity = eventoMapper.toEntity(dto);
-        entity.setCreador(creador.get());
+        entity.setCreador(creador);
         Evento saved = eventoRepository.save(entity);
         return eventoMapper.toDTO(saved);
     }
 
     public Page<EventoDTO> listarEventosFiltrados(LocalDateTime fecha, String categoria, String institucion, Pageable pageable) {
-        return eventoRepository.findByFiltros(fecha, categoria, institucion, pageable)
-                .map(eventoMapper::toDTO);
+        return eventoRepository.findByFiltros(fecha, categoria, institucion, pageable).map(eventoMapper::toDTO);
     }
 
     public Optional<EventoDTO> obtenerEventoPorId(Integer id) {
@@ -45,13 +41,9 @@ public class EventoService {
     }
 
     public EventoDTO modificarEvento(Integer id, EventoDTO dto) {
-        Evento existente = eventoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Evento no encontrado"));
-        // Actualiza campos con mapper (usa @MappingTarget si expandes para merges avanzados, PDF p.16)
-        existente.setNombre(dto.getNombre());
-        existente.setDescripcion(dto.getDescripcion());
-        // ... similar para otros
-        Evento saved = eventoRepository.save(existente);
-        return eventoMapper.toDTO(saved);
+        Evento entity = eventoRepository.findById(id).orElseThrow();
+        eventoMapper.updateEvento(dto, entity);
+        return eventoMapper.toDTO(eventoRepository.save(entity));
     }
 
     public List<EventoDTO> obtenerTop5Eventos() {

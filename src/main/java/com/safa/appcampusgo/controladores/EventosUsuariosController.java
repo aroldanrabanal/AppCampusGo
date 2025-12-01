@@ -19,7 +19,6 @@ public class EventosUsuariosController {
     public ResponseEntity<EventosUsuariosDTO> inscribir(@PathVariable Integer eventoId,
                                                         @RequestParam Integer usuarioId,
                                                         @RequestParam Estado estado) {
-        EventosUsuariosDTO dto = eventosUsuariosService.inscribirUsuario(usuarioId, eventoId, estado);
-        return new ResponseEntity<>(dto, HttpStatus.CREATED);
+        return new ResponseEntity<>(eventosUsuariosService.inscribirUsuario(usuarioId, eventoId, estado), HttpStatus.CREATED);
     }
 }
