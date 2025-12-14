@@ -2,19 +2,17 @@ package com.safa.appcampusgo.mappers;
 
 import com.safa.appcampusgo.modelos.Evento;
 import com.safa.appcampusgo.dtos.EventoDTO;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface EventoMapper {
-    @Mapping(target = "creadorId", source = "creador.id", ignore = true)
-    @Mapping(target = "creadorNombre", source = "creador.nombre", ignore = true)
+    @Mapping(target = "creadorId", source = "creador.id")
+    @Mapping(target = "creadorNombre", source = "creador.nombre")
     EventoDTO toDTO(Evento evento);
 
-    @Mapping(target = "creador.id", source = "creadorId", ignore = true)
+    @Mapping(target = "creador.id", source = "creadorId")
     Evento toEntity(EventoDTO dto);
 
-    @Mapping(target = "id", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEvento(EventoDTO dto, @MappingTarget Evento entity);
 }

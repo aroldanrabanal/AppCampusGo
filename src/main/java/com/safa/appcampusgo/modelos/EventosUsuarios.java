@@ -19,7 +19,7 @@ public class EventosUsuarios {
 
     // Cambiado: Usa enum para estado (ASISTENTE, INTERESADO). Almacena como STRING en BD.
     @Enumerated(EnumType.STRING)
-    private Estado estado;  // Crea un enum Estado { ASISTENTE, INTERESADO }
+    private Estado estado;
 
     @ManyToOne
     @JoinColumn(name = "id_usuarios")

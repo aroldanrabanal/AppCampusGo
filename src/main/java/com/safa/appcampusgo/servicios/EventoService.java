@@ -1,6 +1,7 @@
 package com.safa.appcampusgo.servicios;
 
 import com.safa.appcampusgo.dtos.EventoDTO;
+import com.safa.appcampusgo.dtos.TopEventoDTO;
 import com.safa.appcampusgo.mappers.EventoMapper;
 import com.safa.appcampusgo.modelos.Evento;
 import com.safa.appcampusgo.modelos.Rol;
@@ -13,8 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,23 +33,45 @@ public class EventoService {
     }
 
     public Page<EventoDTO> listarEventosFiltrados(LocalDateTime fecha, String categoria, String institucion, Pageable pageable) {
-        return eventoRepository.findByFiltros(fecha, categoria, institucion, pageable).map(eventoMapper::toDTO);
-    }
-
-    public Optional<EventoDTO> obtenerEventoPorId(Integer id) {
-        return eventoRepository.findById(id).map(eventoMapper::toDTO);
+        Page<Evento> page = eventoRepository.findByFiltros(fecha, categoria, institucion, pageable);
+        return page.map(entity -> {
+            EventoDTO dto = eventoMapper.toDTO(entity);
+            List<String> asistentes = eventoRepository.findAsistentesNombresByEventoId(entity.getId());
+            dto.setAsistentes(asistentes);
+            return dto;
+        });
     }
 
     public EventoDTO modificarEvento(Integer id, EventoDTO dto) {
-        Evento entity = eventoRepository.findById(id).orElseThrow();
+        Evento entity = eventoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Evento no encontrado"));
         eventoMapper.updateEvento(dto, entity);
         return eventoMapper.toDTO(eventoRepository.save(entity));
     }
 
-    public List<EventoDTO> obtenerTop5Eventos() {
-        List<Object[]> results = eventoRepository.findTop5EventosConMasAsistentes();
-        return results.stream().limit(5)
-                .map(result -> eventoMapper.toDTO((Evento) result[0]))
-                .collect(Collectors.toList());
+    public Optional<EventoDTO> obtenerEventoPorId(Integer id) {
+        Optional<Evento> entityOpt = eventoRepository.findById(id);
+        if (entityOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        Evento entity = entityOpt.get();
+        EventoDTO dto = eventoMapper.toDTO(entity);
+        // Nueva: Fetch nombres asistentes y set en DTO
+        List<String> asistentes = eventoRepository.findAsistentesNombresByEventoId(id);
+        dto.setAsistentes(asistentes);
+        return Optional.of(dto);
+    }
+
+    public List<TopEventoDTO> obtenerTop5Eventos() {
+        List<Object[]> results = eventoRepository.findTop5EventosConAsistentes();
+        List<TopEventoDTO> dtos = new ArrayList<>();
+        for (Object[] row : results) {
+            TopEventoDTO dto = new TopEventoDTO();
+            dto.setNombreEvento((String) row[0]);
+            dto.setNumAsistentes((Long) row[1]);
+            String nombresStr = (String) row[2];
+            dto.setNombresAsistentes(nombresStr != null ? Arrays.asList(nombresStr.split(", ")) : new ArrayList<>());  // Split a lista
+            dtos.add(dto);
+        }
+        return dtos;
     }
 }

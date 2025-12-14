@@ -6,6 +6,5 @@ import java.util.Optional;
 
 public interface CursoRepository extends JpaRepository<Cursos, Integer> {
 
-    // Método derivado para buscar curso por nombre y grupo (ej. para registro de usuarios).
     Optional<Cursos> findByNombreAndGrupo(String nombre, String grupo);
 }

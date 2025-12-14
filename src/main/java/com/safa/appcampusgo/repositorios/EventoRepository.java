@@ -11,10 +11,11 @@ import java.util.List;
 
 public interface EventoRepository extends JpaRepository<Evento, Integer> {
 
-    // Para endpoint 3 - Lista con filtros (fecha, categoria, institucion).
     Page<Evento> findByFechaAfterAndCategoriaAndInstitucion(LocalDateTime fecha, String categoria, String institucion, Pageable pageable);
 
-    // Variante sin todos los filtros (si algunos son opcionales, usa @Query).
+    @Query("SELECT u.nombre FROM Usuarios u JOIN u.eventosUsuarios eu WHERE eu.idEvento.id = :eventoId AND eu.estado = 'ASISTENTE'")
+    List<String> findAsistentesNombresByEventoId(@Param("eventoId") Integer eventoId);
+
     @Query("SELECT e FROM Evento e WHERE (:fecha is null or e.fecha > :fecha) " +
             "AND (:categoria is null or e.categoria = :categoria) " +
             "AND (:institucion is null or e.institucion = :institucion)")
@@ -23,10 +24,11 @@ public interface EventoRepository extends JpaRepository<Evento, Integer> {
                                @Param("institucion") String institucion,
                                Pageable pageable);
 
-    // Para endpoint 9 - Top 5 eventos con más asistentes.
-    @Query("SELECT e, COUNT(eu) as asistentes FROM Evento e " +
-            "JOIN e.eventosUsuarios eu WHERE eu.estado = 'ASISTENTE' " +
-            "GROUP BY e " +
-            "ORDER BY asistentes DESC")
-    List<Object[]> findTop5EventosConMasAsistentes();  // Devuelve [Evento, Long], limita en servicio a 5.
+    @Query(value = "SELECT e.nombre AS nombreEvento, COUNT(eu.id) AS numAsistentes, GROUP_CONCAT(u.nombre SEPARATOR ', ') AS nombresAsistentes " +
+            "FROM eventos e LEFT JOIN eventos_usuarios eu ON e.id = eu.id_eventos " +
+            "LEFT JOIN usuarios u ON eu.id_usuarios = u.id " +
+            "WHERE eu.estado = 'ASISTENTE' " +
+            "GROUP BY e.id " +
+            "ORDER BY numAsistentes DESC LIMIT 5", nativeQuery = true)
+    List<Object[]> findTop5EventosConAsistentes();
 }

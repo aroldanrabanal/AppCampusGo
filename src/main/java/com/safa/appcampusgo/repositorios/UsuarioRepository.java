@@ -10,22 +10,17 @@ import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuarios, Integer> {
 
-    // Método derivado para buscar por email (útil para login/registro, endpoint 1).
     Optional<Usuarios> findByEmail(String email);
 
-    // Método derivado para filtrar por rol (ej. lista de profesores).
     List<Usuarios> findByRol(Rol rol);
 
-    //  Para endpoint 8 - Eventos en los que participa un usuario (relacional).
     @Query("SELECT eu.idEvento FROM EventosUsuarios eu WHERE eu.idUsuario.id = :usuarioId")
     List<Evento> findEventosByUsuarioId(Integer usuarioId);
 
-    //  Para endpoint 10 - Usuario más activo (publicados + participados).
-    // Cuenta eventos creados + inscripciones, ordena descendente, limita a 1.
-    @Query("SELECT u FROM Usuarios u " +
-            "LEFT JOIN u.eventosCreados ec " +
-            "LEFT JOIN u.eventosUsuarios eu " +
-            "GROUP BY u " +
-            "ORDER BY (COUNT(ec) + COUNT(eu)) DESC")
-    List<Usuarios> findUsuariosMasActivos();;
+    @Query(value = "WITH top_user AS (SELECT u.id, u.nombre FROM usuarios u ORDER BY ( (SELECT COUNT(*) FROM eventos e WHERE e.id_creador = u.id) + (SELECT COUNT(*) FROM eventos_usuarios eu WHERE eu.id_usuarios = u.id AND eu.estado = 'ASISTENTE') ) DESC LIMIT 1) " +
+            "SELECT top.nombre AS userNombre, e.nombre AS eventoNombre, 'CREADO' AS tipo FROM top_user top LEFT JOIN eventos e ON top.id = e.id_creador " +
+            "UNION ALL " +
+            "SELECT top.nombre AS userNombre, ev.nombre AS eventoNombre, 'ASISTIDO' AS tipo FROM top_user top LEFT JOIN eventos_usuarios eu ON top.id = eu.id_usuarios LEFT JOIN eventos ev ON eu.id_eventos = ev.id WHERE eu.estado = 'ASISTENTE'",
+            nativeQuery = true)
+    List<Object[]> findTopUsuarioConEventos();
 }

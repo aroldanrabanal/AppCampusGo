@@ -1,6 +1,8 @@
 package com.safa.appcampusgo.controladores;
 
 import com.safa.appcampusgo.dtos.EventoDTO;
+import com.safa.appcampusgo.dtos.TopEventoDTO;
+import com.safa.appcampusgo.dtos.UsuariosActivoDTO;
 import com.safa.appcampusgo.dtos.UsuariosDTO;
 import com.safa.appcampusgo.servicios.EventoService;
 import com.safa.appcampusgo.servicios.UsuarioService;
@@ -20,12 +22,11 @@ public class EstadisticasController {
     private final UsuarioService usuarioService;
 
     @GetMapping("/eventos")
-    public List<EventoDTO> top5Eventos() {
+    public List<TopEventoDTO> top5Eventos() {
         return eventoService.obtenerTop5Eventos();
     }
-
     @GetMapping("/usuarioActivo")
-    public UsuariosDTO usuarioMasActivo() {
+    public UsuariosActivoDTO usuarioMasActivo() {
         return usuarioService.obtenerUsuarioMasActivo();
     }
 }

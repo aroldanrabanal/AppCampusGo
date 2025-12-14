@@ -31,7 +31,6 @@ public class Usuarios {
     @JoinColumn(name = "ID_CURSO", nullable = true)
     private Cursos curso;
 
-    // Agrego @JsonIgnore para evitar recursion infinita en JSON.
     @OneToMany(mappedBy = "creador")
     @JsonIgnore
     private List<Evento> eventosCreados;
