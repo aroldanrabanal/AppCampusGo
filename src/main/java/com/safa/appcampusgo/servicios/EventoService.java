@@ -1,6 +1,7 @@
 package com.safa.appcampusgo.servicios;
 
 import com.safa.appcampusgo.dtos.EventoDTO;
+import com.safa.appcampusgo.dtos.EventoSimpleDTO;
 import com.safa.appcampusgo.dtos.TopEventoDTO;
 import com.safa.appcampusgo.mappers.EventoMapper;
 import com.safa.appcampusgo.modelos.Evento;
@@ -55,10 +56,22 @@ public class EventoService {
         }
         Evento entity = entityOpt.get();
         EventoDTO dto = eventoMapper.toDTO(entity);
-        // Nueva: Fetch nombres asistentes y set en DTO
         List<String> asistentes = eventoRepository.findAsistentesNombresByEventoId(id);
         dto.setAsistentes(asistentes);
         return Optional.of(dto);
+    }
+
+    public List<EventoSimpleDTO> todosEventos() {
+        List<Evento> eventos = eventoRepository.findAll();
+        return eventos.stream().map(evento -> {
+            EventoSimpleDTO dto = new EventoSimpleDTO();
+            dto.setNombre(evento.getNombre());
+            dto.setDescripcion(evento.getDescripcion());
+            dto.setFecha(evento.getFecha());
+            dto.setPrecio(evento.getPrecio());
+            dto.setLugar(evento.getLugar());
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     public List<TopEventoDTO> obtenerTop5Eventos() {

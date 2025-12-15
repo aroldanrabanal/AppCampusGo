@@ -1,6 +1,7 @@
 package com.safa.appcampusgo.controladores;
 
 import com.safa.appcampusgo.dtos.EventoDTO;
+import com.safa.appcampusgo.dtos.EventoSimpleDTO;
 import com.safa.appcampusgo.servicios.EventoService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -43,5 +45,10 @@ public class EventoController {
     @PutMapping("/{id}")
     public ResponseEntity<EventoDTO> modificarEvento(@PathVariable Integer id, @RequestBody EventoDTO dto) {
         return ResponseEntity.ok(eventoService.modificarEvento(id, dto));
+    }
+
+    @GetMapping("/front")
+    public List<EventoSimpleDTO> listarEventosFront() {
+        return eventoService.todosEventos();
     }
 }
