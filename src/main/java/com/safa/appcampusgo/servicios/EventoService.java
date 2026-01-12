@@ -70,6 +70,8 @@ public class EventoService {
             dto.setFecha(evento.getFecha());
             dto.setPrecio(evento.getPrecio());
             dto.setLugar(evento.getLugar());
+            dto.setCategoria(evento.getCategoria());
+            dto.setId(evento.getId());
             return dto;
         }).collect(Collectors.toList());
     }
@@ -86,5 +88,12 @@ public class EventoService {
             dtos.add(dto);
         }
         return dtos;
+    }
+
+    public void eliminarEvento(Integer id) {
+        Evento evento = eventoRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Evento con ID " + id + " no encontrado"));
+
+        eventoRepository.delete(evento);
     }
 }

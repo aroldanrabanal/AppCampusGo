@@ -51,4 +51,11 @@ public class EventoController {
     public List<EventoSimpleDTO> listarEventosFront() {
         return eventoService.todosEventos();
     }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarEvento(@PathVariable Integer id) {
+        eventoService.eliminarEvento(id);
+        return ResponseEntity.noContent().build();
+    }
 }

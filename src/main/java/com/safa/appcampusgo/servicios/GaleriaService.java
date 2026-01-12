@@ -25,16 +25,16 @@ public class GaleriaService {
 
     public GaleriaDTO subirMultimedia(Integer eventoId, MultipartFile file, String descripcion) throws IOException {
         Evento evento = eventoRepository.findById(eventoId).orElseThrow();
-        String tmpDir = System.getProperty("java.io.tmpdir");
-        String uploadDir = tmpDir + "/uploads/" + eventoId;
-        File dir = new File(uploadDir);
+        String baseDir = System.getProperty("user.dir") + File.separator + "uploads" + File.separator + eventoId;
+        File dir = new File(baseDir);
         if (!dir.exists()) {
-            if (!dir.mkdirs()) {  // Crea dirs si no existen
-                throw new IOException("No se pudo crear directorio: " + uploadDir);
+            if (!dir.mkdirs()) {
+                throw new IOException("No se pudo crear directorio: " + baseDir);
             }
         }
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-        File targetFile = new File(uploadDir + "/" + fileName);
+        String originalName = file.getOriginalFilename();
+        String fileName = UUID.randomUUID() + "_" + (originalName == null ? "archivo" : originalName);
+        File targetFile = new File(dir, fileName);
         file.transferTo(targetFile);
         String url = "/uploads/" + eventoId + "/" + fileName;
 

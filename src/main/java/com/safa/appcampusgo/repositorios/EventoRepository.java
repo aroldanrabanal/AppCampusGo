@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface EventoRepository extends JpaRepository<Evento, Integer> {
 
@@ -31,4 +32,5 @@ public interface EventoRepository extends JpaRepository<Evento, Integer> {
             "GROUP BY e.id " +
             "ORDER BY numAsistentes DESC LIMIT 5", nativeQuery = true)
     List<Object[]> findTop5EventosConAsistentes();
+
 }
