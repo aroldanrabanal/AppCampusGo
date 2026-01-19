@@ -3,6 +3,7 @@ package com.safa.appcampusgo.servicios;
 import com.safa.appcampusgo.dtos.UsuariosActivoDTO;
 import com.safa.appcampusgo.dtos.UsuariosDTO;
 import com.safa.appcampusgo.mappers.UsuariosMapper;
+import com.safa.appcampusgo.modelos.Estado;
 import com.safa.appcampusgo.modelos.Evento;
 import com.safa.appcampusgo.modelos.Usuarios;
 import com.safa.appcampusgo.repositorios.CursoRepository;
@@ -68,6 +69,43 @@ public class UsuarioService {
             e.setTipo((String) row[2]);
             eventos.add(e);
         }
+        dto.setEventos(eventos);
+        return dto;
+    }
+
+    public UsuariosActivoDTO obtenerUsuarioMasActivo2() {
+        List<Usuarios> usuariosOrdenados = usuarioRepository.findUsuariosMasActivos();
+
+        if (usuariosOrdenados.isEmpty()) {
+            throw new IllegalArgumentException("No hay usuarios activos");
+        }
+
+        Usuarios usuarioMasActivo = usuariosOrdenados.get(0);  // El primero es el más activo
+
+        UsuariosActivoDTO dto = new UsuariosActivoDTO();
+        dto.setNombreUsuario(usuarioMasActivo.getNombre());
+
+        // Lista simple de eventos (creados + asistidos)
+        List<UsuariosActivoDTO.EventoTipoDTO> eventos = new ArrayList<>();
+
+        // Eventos creados
+        usuarioMasActivo.getEventosCreados().forEach(e -> {
+            UsuariosActivoDTO.EventoTipoDTO et = new UsuariosActivoDTO.EventoTipoDTO();
+            et.setNombreEvento(e.getNombre());
+            et.setTipo("CREADO");
+            eventos.add(et);
+        });
+
+        // Eventos asistidos
+        usuarioMasActivo.getEventosUsuarios().stream()
+                .filter(eu -> eu.getEstado() == Estado.ASISTENTE)
+                .forEach(eu -> {
+                    UsuariosActivoDTO.EventoTipoDTO et = new UsuariosActivoDTO.EventoTipoDTO();
+                    et.setNombreEvento(eu.getIdEvento().getNombre());
+                    et.setTipo("ASISTIDO");
+                    eventos.add(et);
+                });
+
         dto.setEventos(eventos);
         return dto;
     }
