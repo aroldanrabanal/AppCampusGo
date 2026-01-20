@@ -9,7 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "cursos")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
