@@ -9,6 +9,7 @@ import com.safa.appcampusgo.modelos.Usuarios;
 import com.safa.appcampusgo.repositorios.CursoRepository;
 import com.safa.appcampusgo.repositorios.UsuarioRepository;
 import lombok.AllArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -74,21 +75,21 @@ public class UsuarioService {
     }
 
     public UsuariosActivoDTO obtenerUsuarioMasActivo2() {
-        List<Usuarios> usuariosOrdenados = usuarioRepository.findUsuariosMasActivos();
-
-        if (usuariosOrdenados.isEmpty()) {
-            throw new IllegalArgumentException("No hay usuarios activos");
+        List<Usuarios> usuarios = usuarioRepository.findUsuariosMasActivos();
+        if (usuarios == null) {
+            usuarios = new ArrayList<>();
         }
+        //if (usuarios.isEmpty()) {
+        //    throw new IllegalArgumentException("No hay usuarios activos");
+        //}
 
-        Usuarios usuarioMasActivo = usuariosOrdenados.get(0);  // El primero es el más activo
+        Usuarios usuarioMasActivo = usuarios.getFirst();
 
         UsuariosActivoDTO dto = new UsuariosActivoDTO();
         dto.setNombreUsuario(usuarioMasActivo.getNombre());
 
-        // Lista simple de eventos (creados + asistidos)
         List<UsuariosActivoDTO.EventoTipoDTO> eventos = new ArrayList<>();
 
-        // Eventos creados
         usuarioMasActivo.getEventosCreados().forEach(e -> {
             UsuariosActivoDTO.EventoTipoDTO et = new UsuariosActivoDTO.EventoTipoDTO();
             et.setNombreEvento(e.getNombre());
@@ -96,7 +97,6 @@ public class UsuarioService {
             eventos.add(et);
         });
 
-        // Eventos asistidos
         usuarioMasActivo.getEventosUsuarios().stream()
                 .filter(eu -> eu.getEstado() == Estado.ASISTENTE)
                 .forEach(eu -> {

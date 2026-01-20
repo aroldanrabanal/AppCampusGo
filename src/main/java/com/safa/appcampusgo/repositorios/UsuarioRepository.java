@@ -25,6 +25,12 @@ public interface UsuarioRepository extends JpaRepository<Usuarios, Integer> {
     List<Object[]> findTopUsuarioConEventos();
 
     @Query("SELECT u FROM Usuarios u " +
-            "ORDER BY (SIZE(u.eventosCreados) + SIZE(u.eventosUsuarios)) DESC")
+            "LEFT JOIN FETCH u.eventosCreados " +
+            "LEFT JOIN FETCH u.eventosUsuarios eu " +
+            "LEFT JOIN FETCH eu.idEvento ")
     List<Usuarios> findUsuariosMasActivos();
+
+    @Query("SELECT u.id, u.nombre FROM Usuarios u " +
+            "ORDER BY (SIZE(u.eventosCreados) + SIZE(u.eventosUsuarios)) DESC")
+    List<Object[]> findTopUsuarioIdYNombre();
 }

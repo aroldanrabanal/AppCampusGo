@@ -1,14 +1,12 @@
 package com.safa.appcampusgo.modelos;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Table(name = "eventos_usuarios")
-@Data
+@Table(name = "eventos_usuarios", schema = "campusgo")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,11 +19,11 @@ public class EventosUsuarios {
     @Enumerated(EnumType.STRING)
     private Estado estado;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuarios")
     private Usuarios idUsuario;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_eventos")
     private Evento idEvento;
 }

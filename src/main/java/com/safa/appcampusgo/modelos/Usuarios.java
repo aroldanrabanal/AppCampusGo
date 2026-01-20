@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "usuarios", schema = "campusgo")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -33,7 +34,7 @@ public class Usuarios {
 
     @OneToMany(mappedBy = "creador")
     @JsonIgnore
-    private List<Evento> eventosCreados;
+    private List<Evento> eventosCreados = new ArrayList<>();;
 
     @OneToMany(mappedBy = "idUsuario")
     @JsonIgnore

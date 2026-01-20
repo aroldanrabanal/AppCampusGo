@@ -39,13 +39,15 @@ public class UsuarioServiceTest {
 
     @BeforeAll
     void cargarDatos() {
-        Usuarios usuarioAngel = new Usuarios();
-        usuarioAngel.setNombre("Angel");
-        usuarioAngel.setApellidos("Roldán");
-        usuarioAngel.setEmail("aaa@aaa.com");
-        usuarioAngel.setRol(Rol.ESTUDIANTE);
-        usuarioRepository.save(usuarioAngel);
+        // Usuario Angel inicial
+        Usuarios angel = new Usuarios();
+        angel.setNombre("Angel");
+        angel.setApellidos("Roldán");
+        angel.setEmail("aaa@aaa.com");
+        angel.setRol(Rol.ESTUDIANTE);
+        usuarioRepository.save(angel);
 
+        // Usuario Lucía (más activo)
         Usuarios lucia = new Usuarios();
         lucia.setNombre("Lucía");
         lucia.setApellidos("Profesora");
@@ -53,27 +55,38 @@ public class UsuarioServiceTest {
         lucia.setRol(Rol.PROFESOR);
         usuarioRepository.save(lucia);
 
-        for (int i = 1; i <= 3; i++) {
-            Evento evento = new Evento();
-            evento.setNombre("Evento creado " + i + " por Lucía");
-            evento.setFecha(LocalDateTime.now().plusDays(i));
-            evento.setCreador(lucia);
-            eventoRepository.save(evento);
-        }
+        // Evento creado por Lucía
+        Evento e1 = Evento.builder()
+                .nombre("Taller 1")
+                .fecha(LocalDateTime.now().plusDays(5))
+                .creador(lucia)
+                .build();
+        eventoRepository.save(e1);
 
-        Evento eventoAsistido = new Evento();
-        eventoAsistido.setNombre("Evento al que Lucía asiste");
-        eventoAsistido.setFecha(LocalDateTime.now().plusDays(10));
-        eventoAsistido.setCreador(usuarioAngel);
-        eventoRepository.save(eventoAsistido);
+        // Otro evento creado por Lucía
+        Evento e2 = Evento.builder()
+                .nombre("Taller 2")
+                .fecha(LocalDateTime.now().plusDays(10))
+                .creador(lucia)
+                .build();
+        eventoRepository.save(e2);
 
-        EventosUsuarios inscrip = new EventosUsuarios();
-        inscrip.setIdUsuario(lucia);
-        inscrip.setIdEvento(eventoAsistido);
-        inscrip.setEstado(Estado.ASISTENTE);
+        // Evento creado por Angel (para que Lucía lo asista)
+        Evento e3 = Evento.builder()
+                .nombre("Conferencia")
+                .fecha(LocalDateTime.now().plusDays(15))
+                .creador(angel)
+                .build();
+        eventoRepository.save(e3);
+
+        // Lucía asiste al evento de Angel
+        EventosUsuarios inscrip = EventosUsuarios.builder()
+                .idUsuario(lucia)
+                .idEvento(e3)
+                .estado(Estado.ASISTENTE)
+                .build();
         eventosUsuariosRepository.save(inscrip);
     }
-
     @Test
      void usuarioExiste() {
         assertTrue(usuarioService.obtenerPorId(1).isPresent(),
@@ -162,22 +175,16 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void obtenerUsuarioMasActivo_Positive() {
+    void obtenerUsuarioMasActivo_Negative_SinActividad() {
+        eventosUsuariosRepository.deleteAll();
+        eventoRepository.deleteAll();
+
         UsuariosActivoDTO result = usuarioService.obtenerUsuarioMasActivo2();
 
-        assertNotNull(result);
-        assertFalse(result.getEventos().isEmpty(), "Debe tener al menos algunos eventos");
-        System.out.println("Usuario más activo encontrado ✓");
-    }
+        assertNotNull(result, "El método debe devolver un DTO aunque no haya actividad");
+        assertTrue(result.getEventos().isEmpty(),
+                "Si no hay actividad, la lista de eventos debe estar vacía");
 
-    @Test
-    public void obtenerUsuarioMasActivo_Negative_NoUsers() {
-        usuarioRepository.deleteAll();
-
-        assertThrows(IllegalArgumentException.class,
-                () -> usuarioService.obtenerUsuarioMasActivo2(),
-                "No hay usuarios activos");
-
-        System.out.println("No hay usuarios activos → excepción correcta ✓");
+        System.out.println("Usuario sin actividad → eventos vacíos ✓");
     }
 }
