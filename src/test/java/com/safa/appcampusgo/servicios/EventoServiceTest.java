@@ -1,17 +1,12 @@
 package com.safa.appcampusgo.servicios;
 
-import com.safa.appcampusgo.dtos.EventoDTO;
-import com.safa.appcampusgo.dtos.EventoSimpleDTO;
-import com.safa.appcampusgo.dtos.EventosUsuariosDTO;
-import com.safa.appcampusgo.dtos.GaleriaDTO;
-import com.safa.appcampusgo.modelos.Estado;
-import com.safa.appcampusgo.modelos.Evento;
-import com.safa.appcampusgo.modelos.Rol;
-import com.safa.appcampusgo.modelos.Usuarios;
+import com.safa.appcampusgo.dtos.*;
+import com.safa.appcampusgo.modelos.*;
 import com.safa.appcampusgo.repositorios.EventoRepository;
 import com.safa.appcampusgo.repositorios.EventosUsuariosRepository;
 import com.safa.appcampusgo.repositorios.UsuarioRepository;
 import jakarta.transaction.Transactional;
+import org.antlr.v4.runtime.misc.LogManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -24,6 +19,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -41,6 +37,8 @@ public class EventoServiceTest {
 
     @Autowired private EventoRepository eventoRepository;
     @Autowired private UsuarioRepository usuarioRepository;
+
+    @Autowired private EventosUsuariosRepository eventosUsuariosRepository;
 
     private Usuarios profesor;
     private Evento eventoComun;
@@ -199,5 +197,43 @@ public class EventoServiceTest {
                 () -> galeriaService.subirMultimedia(999, file, "Foto inválida"),
                 "Debe fallar si el evento no existe");
         System.out.println("Subida rechazada por evento inexistente ✓");
+    }
+
+    @Test
+    void obtenerTop5Eventos_Positive() {
+        Usuarios asistente1 = Usuarios.builder().nombre("Ana").rol(Rol.ESTUDIANTE).build();
+        usuarioRepository.save(asistente1);
+
+        Usuarios asistente2 = Usuarios.builder().nombre("Carlos").rol(Rol.ESTUDIANTE).build();
+        usuarioRepository.save(asistente2);
+
+        Evento e1 = Evento.builder().nombre("Fiesta grande").fecha(LocalDateTime.now().plusDays(5)).creador(profesor).build();
+        eventoRepository.save(e1);
+
+        Evento e2 = Evento.builder().nombre("Taller pequeño").fecha(LocalDateTime.now().plusDays(10)).creador(profesor).build();
+        eventoRepository.save(e2);
+
+        eventosUsuariosRepository.save(EventosUsuarios.builder().idEvento(e1).idUsuario(asistente1).estado(Estado.ASISTENTE).build());
+        eventosUsuariosRepository.save(EventosUsuarios.builder().idEvento(e1).idUsuario(asistente2).estado(Estado.ASISTENTE).build());
+
+        eventosUsuariosRepository.save(EventosUsuarios.builder().idEvento(e2).idUsuario(asistente1).estado(Estado.ASISTENTE).build());
+
+        List<TopEventoDTO> result = eventoService.obtenerTop5Eventos();
+
+        assertFalse(result.isEmpty());
+        assertEquals("Fiesta grande", result.getFirst().getNombreEvento());
+        assertEquals(2L, result.getFirst().getNumAsistentes());
+        System.out.println("Top 5 eventos con asistentes correcto ✓");
+    }
+
+    @Test
+    void obtenerTop5Eventos_Negative_SinEventos() {
+        eventosUsuariosRepository.deleteAll();
+        eventoRepository.deleteAll();
+
+        List<TopEventoDTO> result = eventoService.obtenerTop5Eventos();
+
+        assertTrue(result.isEmpty());
+        System.out.println("Top 5 vacío sin eventos ✓");
     }
 }

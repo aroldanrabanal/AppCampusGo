@@ -25,12 +25,18 @@ public interface EventoRepository extends JpaRepository<Evento, Integer> {
                                @Param("institucion") String institucion,
                                Pageable pageable);
 
-    @Query(value = "SELECT e.nombre AS nombreEvento, COUNT(eu.id) AS numAsistentes, GROUP_CONCAT(u.nombre SEPARATOR ', ') AS nombresAsistentes " +
-            "FROM eventos e LEFT JOIN eventos_usuarios eu ON e.id = eu.id_eventos " +
-            "LEFT JOIN usuarios u ON eu.id_usuarios = u.id " +
+    @Query(value = "SELECT e.nombre AS nombreEvento, " +
+            "COUNT(eu.id) AS numAsistentes, " +
+            "STRING_AGG(u.nombre, ', ') AS nombresAsistentes " +
+            "FROM campusgo.eventos e " +
+            "LEFT JOIN campusgo.eventos_usuarios eu ON e.id = eu.id_eventos " +
+            "LEFT JOIN campusgo.usuarios u ON eu.id_usuarios = u.id " +
             "WHERE eu.estado = 'ASISTENTE' " +
             "GROUP BY e.id " +
-            "ORDER BY numAsistentes DESC LIMIT 5", nativeQuery = true)
+            "ORDER BY numAsistentes DESC " +
+            "LIMIT 5", nativeQuery = true)
     List<Object[]> findTop5EventosConAsistentes();
+
+
 
 }
