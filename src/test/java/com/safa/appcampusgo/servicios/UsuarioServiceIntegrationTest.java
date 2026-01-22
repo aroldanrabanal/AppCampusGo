@@ -1,9 +1,12 @@
 package com.safa.appcampusgo.servicios;
 
+import com.safa.appcampusgo.dtos.UsuariosActivoDTO;
 import com.safa.appcampusgo.dtos.UsuariosDTO;
+import com.safa.appcampusgo.mappers.EventoMapper;
 import com.safa.appcampusgo.mappers.UsuariosMapper;
-import com.safa.appcampusgo.modelos.Rol;
-import com.safa.appcampusgo.modelos.Usuarios;
+import com.safa.appcampusgo.modelos.*;
+import com.safa.appcampusgo.repositorios.EventoRepository;
+import com.safa.appcampusgo.repositorios.EventosUsuariosRepository;
 import com.safa.appcampusgo.repositorios.UsuarioRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,10 +15,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Optional;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,6 +33,12 @@ public class UsuarioServiceIntegrationTest {
 
     @Mock
     private UsuariosMapper usuariosMapper;
+
+    @Mock
+    private EventoRepository eventoRepository;
+
+    @Mock
+    private EventosUsuariosRepository eventosUsuariosRepository;
 
     @Test
     @DisplayName("Servicio 1 -> Integración: Registrar usuario cuando NO existe")
@@ -67,5 +75,50 @@ public class UsuarioServiceIntegrationTest {
         verify(usuariosMapper).toEntity(dto); // Se llamó al mapper toEntity
         verify(usuarioRepository).save(angel); // Se llamó a save con el entity correcto (usa eq(angel) si quieres exacto, o any())
         verify(usuariosMapper).toDTO(angel); // Se llamó al mapper toDTO
+    }
+
+    @Test
+    @DisplayName("Servicio 8 -> Obtener eventos por usuario")
+    void obtenerEventosPorUsuario() {
+        Evento evento = Evento.builder()
+                .id(1)
+                .nombre("Evento Test")
+                .build();
+
+        when(usuarioRepository.findEventosByUsuarioId(1))
+                .thenReturn(Collections.singletonList(evento));
+
+        List<Evento> resultado = usuarioService.obtenerEventosPorUsuario(1);
+
+        assertFalse(resultado.isEmpty());
+        assertEquals("Evento Test", resultado.getFirst().getNombre());
+        verify(usuarioRepository).findEventosByUsuarioId(1);
+    }
+
+    @Test
+    @DisplayName("Servicio 10 -> Usuario más activo")
+    void obtenerUsuarioMasActivo() {
+        Usuarios usuario = Usuarios.builder()
+                .id(1)
+                .nombre("Angel")
+                .eventosCreados(new ArrayList<>())
+                .eventosUsuarios(new HashSet<>())
+                .build();
+
+        Evento evento = Evento.builder()
+                .nombre("Evento Test")
+                .creador(usuario)
+                .build();
+
+        usuario.getEventosCreados().add(evento);
+
+        when(usuarioRepository.findUsuariosMasActivos())
+                .thenReturn(Collections.singletonList(usuario));
+
+        UsuariosActivoDTO resultado = usuarioService.obtenerUsuarioMasActivo2();
+
+        assertNotNull(resultado);
+        assertEquals("Angel", resultado.getNombreUsuario());
+        verify(usuarioRepository).findUsuariosMasActivos();
     }
 }

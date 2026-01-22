@@ -1,6 +1,7 @@
 package com.safa.appcampusgo.servicios;
 
 import com.safa.appcampusgo.dtos.EventoDTO;
+import com.safa.appcampusgo.dtos.TopEventoDTO;
 import com.safa.appcampusgo.mappers.EventoMapper;
 import com.safa.appcampusgo.modelos.Evento;
 import com.safa.appcampusgo.modelos.Rol;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -37,7 +40,7 @@ public class EventoServiceIntegrationTest {
     private EventoRepository eventoRepository;
 
     @Mock
-    private UsuarioRepository usuarioRepository;  // Añadido: Mock necesario para findById
+    private UsuarioRepository usuarioRepository;
 
     @Mock
     private EventoMapper eventoMapper;
@@ -144,5 +147,66 @@ public class EventoServiceIntegrationTest {
         assertFalse(resultado.isEmpty());
         assertEquals(1, resultado.getTotalElements());
         assertEquals("Evento Escolar Futuro", resultado.getContent().getFirst().getNombre());
+    }
+
+    @Test
+    @DisplayName("Servicio 4 -> Buscar por ID")
+    void buscarPorId(){
+        when(eventoRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(new Evento()));
+        when(eventoMapper.toDTO(Mockito.any(Evento.class))).thenReturn(new EventoDTO());
+
+        eventoService.obtenerEventoPorId(1);
+
+        verify(eventoRepository).findById(Mockito.anyInt());
+        verify(eventoMapper).toDTO(Mockito.any());
+    }
+
+    @Test
+    @DisplayName("Servicio 5 -> Modificar evento")
+    void modificarEvento() {
+        Evento eventoExistente = Evento.builder()
+                .id(1)
+                .nombre("Evento Original")
+                .descripcion("Descripción original")
+                .build();
+
+        EventoDTO dtoModificado = new EventoDTO();
+        dtoModificado.setNombre("Evento Modificado");
+        dtoModificado.setDescripcion("Nueva descripción");
+
+        Evento eventoActualizado = Evento.builder()
+                .id(1)
+                .nombre("Evento Modificado")
+                .descripcion("Nueva descripción")
+                .build();
+
+        when(eventoRepository.findById(1)).thenReturn(Optional.of(eventoExistente));
+        when(eventoRepository.save(any(Evento.class))).thenReturn(eventoActualizado);
+        when(eventoMapper.toDTO(eventoActualizado)).thenReturn(dtoModificado);
+
+        EventoDTO resultado = eventoService.modificarEvento(1, dtoModificado);
+
+        assertNotNull(resultado);
+        assertEquals("Evento Modificado", resultado.getNombre());
+        verify(eventoRepository).findById(1);
+        verify(eventoRepository).save(any(Evento.class));
+    }
+
+
+
+    @Test
+    @DisplayName("Servicio 9 -> Top 5 eventos")
+    void obtenerTop5Eventos() {
+        Object[] resultado = new Object[]{"Evento Popular", 10L, "Ana, Carlos"};
+
+        when(eventoRepository.findTop5EventosConAsistentes())
+                .thenReturn(Collections.singletonList(resultado));
+
+        List<TopEventoDTO> top = eventoService.obtenerTop5Eventos();
+
+        assertFalse(top.isEmpty());
+        assertEquals("Evento Popular", top.getFirst().getNombreEvento());
+        assertEquals(10L, top.getFirst().getNumAsistentes());
+        verify(eventoRepository).findTop5EventosConAsistentes();
     }
 }
