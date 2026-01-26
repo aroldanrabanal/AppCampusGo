@@ -8,6 +8,7 @@ import com.safa.appcampusgo.repositorios.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.antlr.v4.runtime.misc.LogManager;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +67,7 @@ public class EventoServiceTest {
     }
 
     @Test
+    @DisplayName("Servicio 2 -> Registrar evento")
     void crearEvento_Positive() {
         EventoDTO dto = new EventoDTO();
         dto.setNombre("Taller de robótica 2026");
@@ -80,11 +82,12 @@ public class EventoServiceTest {
 
         assertNotNull(result.getId(), "El nuevo evento debe tener ID asignado");
         assertEquals("Taller de robótica 2026", result.getNombre());
-        assertEquals(profesor.getId(), result.getCreadorId());  // Verifica creador
-        System.out.println("Nuevo evento creado correctamente ✓");
+        assertEquals(profesor.getId(), result.getCreadorId());
+        System.out.println("Nuevo evento creado correctamente ");
     }
 
     @Test
+    @DisplayName("Servicio 2 -> Registrar evento negativo")
     void crearEvento_Negative_CreadorNoExiste() {
         EventoDTO dto = new EventoDTO();
         dto.setNombre("Evento inválido");
@@ -93,46 +96,51 @@ public class EventoServiceTest {
         assertThrows(NoSuchElementException.class,
                 () -> eventoService.crearEvento(dto, 999),
                 "Debe lanzar excepción si el creador no existe en BD");
-        System.out.println("Creación rechazada por creador inexistente ✓");
+        System.out.println("Creación rechazada por creador inexistente ");
     }
 
     @Test
+    @DisplayName("Servicio 3 -> Listar eventos")
     void listarEventosFiltrados_Positive() {
         Page<EventoDTO> result = eventoService.listarEventosFiltrados(
                 null, "Fiesta", "SAFA", PageRequest.of(0, 10));
 
         assertFalse(result.isEmpty());
-        assertEquals("Fiesta fin de curso", result.getContent().get(0).getNombre());
-        System.out.println("Listado de eventos con filtros correcto ✓");
+        assertEquals("Fiesta fin de curso", result.getContent().getFirst().getNombre());
+        System.out.println("Listado de eventos con filtros correcto ");
     }
 
     @Test
+    @DisplayName("Servicio 3 -> Listar eventos negativo")
     void listarEventosFiltrados_Negative_SinResultados() {
         Page<EventoDTO> result = eventoService.listarEventosFiltrados(
                 LocalDateTime.now().plusYears(1), "Inexistente", "SAFA", PageRequest.of(0, 10));
 
         assertTrue(result.isEmpty());
-        System.out.println("No resultados con filtros inválidos ✓");
+        System.out.println("No resultados con filtros inválidos ");
     }
 
     @Test
+    @DisplayName("Servicio 4 -> Obtener evento por ID")
     void obtenerEventoPorId_Positive() {
         Optional<EventoDTO> result = eventoService.obtenerEventoPorId(eventoComun.getId());
 
         assertTrue(result.isPresent());
         assertEquals("Fiesta fin de curso", result.get().getNombre());
-        System.out.println("Detalle de evento obtenido ✓");
+        System.out.println("Detalle de evento obtenido ");
     }
 
     @Test
+    @DisplayName("Servicio 4 -> Obtener evento por ID negativo")
     void obtenerEventoPorId_Negative_NoExiste() {
         Optional<EventoDTO> result = eventoService.obtenerEventoPorId(999);
 
         assertFalse(result.isPresent());
-        System.out.println("Evento inexistente devuelve vacío ✓");
+        System.out.println("Evento inexistente devuelve vacío ");
     }
 
     @Test
+    @DisplayName("Servicio 5 -> Modificar evento")
     void modificarEvento_Positive() {
         EventoDTO dto = new EventoDTO();
         dto.setNombre("Fiesta fin de curso - ACTUALIZADA");
@@ -141,41 +149,45 @@ public class EventoServiceTest {
         EventoDTO result = eventoService.modificarEvento(eventoComun.getId(), dto);
 
         assertEquals("Fiesta fin de curso - ACTUALIZADA", result.getNombre());
-        System.out.println("Evento modificado correctamente ✓");
+        System.out.println("Evento modificado correctamente ");
     }
 
     @Test
+    @DisplayName("Servicio 5 -> Modificar evento negativo")
     void modificarEvento_Negative_NoExiste() {
         EventoDTO dto = new EventoDTO();
         dto.setNombre("Intento fallido");
 
-        assertThrows(Exception.class,  // Puede ser NoSuchElementException
+        assertThrows(Exception.class,
                 () -> eventoService.modificarEvento(999, dto),
                 "Debe fallar si no existe");
-        System.out.println("Modificación rechazada por ID inexistente ✓");
+        System.out.println("Modificación rechazada por ID inexistente ");
     }
 
     @Test
+    @DisplayName("Servicio 6 -> Inscribir usuarios")
     void inscribirUsuario_Positive() {
         EventosUsuariosDTO result = eventosUsuariosService.inscribirUsuario(
                 profesor.getId(), eventoComun.getId(), Estado.ASISTENTE);
 
         assertNotNull(result.getId());
         assertEquals(Estado.ASISTENTE, result.getEstado());
-        System.out.println("Inscripción como ASISTENTE realizada ✓");
+        System.out.println("Inscripción como ASISTENTE realizada ");
     }
 
     @Test
+    @DisplayName("Servicio 6 -> Inscribir usuarios negativo")
     void inscribirUsuario_Negative_YaInscrito() {
         eventosUsuariosService.inscribirUsuario(profesor.getId(), eventoComun.getId(), Estado.INTERESADO);
 
         assertThrows(IllegalArgumentException.class,
                 () -> eventosUsuariosService.inscribirUsuario(profesor.getId(), eventoComun.getId(), Estado.ASISTENTE),
                 "Ya inscrito");
-        System.out.println("Inscripción duplicada rechazada ✓");
+        System.out.println("Inscripción duplicada rechazada ");
     }
 
     @Test
+    @DisplayName("Servicio 7 -> Subir fotos")
     void subirMultimedia_Positive() throws IOException {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "foto-fiesta.jpg", "image/jpeg", "foto de prueba".getBytes());
@@ -185,10 +197,11 @@ public class EventoServiceTest {
         assertNotNull(result.getId());
         assertTrue(result.getUrl().contains("/uploads/"));
         assertEquals("Foto de la fiesta", result.getDescripcion());
-        System.out.println("Foto subida correctamente al evento ✓");
+        System.out.println("Foto subida correctamente al evento ");
     }
 
     @Test
+    @DisplayName("Servicio 7 -> Subir fotos negativo")
     void subirMultimedia_Negative_EventoNoExiste() throws IOException {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "foto-invalida.jpg", "image/jpeg", "contenido".getBytes());
@@ -196,10 +209,11 @@ public class EventoServiceTest {
         assertThrows(Exception.class,
                 () -> galeriaService.subirMultimedia(999, file, "Foto inválida"),
                 "Debe fallar si el evento no existe");
-        System.out.println("Subida rechazada por evento inexistente ✓");
+        System.out.println("Subida rechazada por evento inexistente ");
     }
 
     @Test
+    @DisplayName("Servicio 9 -> Obtener top 5 eventos")
     void obtenerTop5Eventos_Positive() {
         Usuarios asistente1 = Usuarios.builder().nombre("Ana").rol(Rol.ESTUDIANTE).build();
         usuarioRepository.save(asistente1);
@@ -223,10 +237,11 @@ public class EventoServiceTest {
         assertFalse(result.isEmpty());
         assertEquals("Fiesta grande", result.getFirst().getNombreEvento());
         assertEquals(2L, result.getFirst().getNumAsistentes());
-        System.out.println("Top 5 eventos con asistentes correcto ✓");
+        System.out.println("Top 5 eventos con asistentes correcto");
     }
 
     @Test
+    @DisplayName("Servicio 9 -> Obtener top 5 eventos negativo")
     void obtenerTop5Eventos_Negative_SinEventos() {
         eventosUsuariosRepository.deleteAll();
         eventoRepository.deleteAll();
@@ -234,6 +249,6 @@ public class EventoServiceTest {
         List<TopEventoDTO> result = eventoService.obtenerTop5Eventos();
 
         assertTrue(result.isEmpty());
-        System.out.println("Top 5 vacío sin eventos ✓");
+        System.out.println("Top 5 vacío sin eventos");
     }
 }

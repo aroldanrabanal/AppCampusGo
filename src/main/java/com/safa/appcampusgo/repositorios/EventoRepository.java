@@ -1,6 +1,8 @@
 package com.safa.appcampusgo.repositorios;
 
 import com.safa.appcampusgo.modelos.Evento;
+import com.safa.appcampusgo.modelos.EventosUsuarios;
+import com.safa.appcampusgo.modelos.Usuarios;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -36,6 +38,8 @@ public interface EventoRepository extends JpaRepository<Evento, Integer> {
             "ORDER BY numAsistentes DESC " +
             "LIMIT 5", nativeQuery = true)
     List<Object[]> findTop5EventosConAsistentes();
+
+    List<Evento> findByCreador(Usuarios creador);
 
 
 
