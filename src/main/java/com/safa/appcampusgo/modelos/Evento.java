@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "eventos")
+@Table(name = "eventos",  schema = "campusgo")
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor

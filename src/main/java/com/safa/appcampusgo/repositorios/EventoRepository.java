@@ -19,9 +19,10 @@ public interface EventoRepository extends JpaRepository<Evento, Integer> {
     @Query("SELECT u.nombre FROM Usuarios u JOIN u.eventosUsuarios eu WHERE eu.idEvento.id = :eventoId AND eu.estado = 'ASISTENTE'")
     List<String> findAsistentesNombresByEventoId(@Param("eventoId") Integer eventoId);
 
-    @Query("SELECT e FROM Evento e WHERE (:fecha is null or e.fecha > :fecha) " +
-            "AND (:categoria is null or e.categoria = :categoria) " +
-            "AND (:institucion is null or e.institucion = :institucion)")
+    @Query("SELECT e FROM Evento e WHERE " +
+            "(cast(:fecha as timestamp) is null or e.fecha > :fecha) " +
+            "AND (cast(:categoria as string) is null or e.categoria = :categoria) " +
+            "AND (cast(:institucion as string) is null or e.institucion = :institucion)")
     Page<Evento> findByFiltros(@Param("fecha") LocalDateTime fecha,
                                @Param("categoria") String categoria,
                                @Param("institucion") String institucion,
