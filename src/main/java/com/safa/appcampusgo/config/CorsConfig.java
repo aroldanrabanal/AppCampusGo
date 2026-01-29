@@ -14,9 +14,9 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns(
                         "https://campusgo-bxo6.onrender.com",
                         "https://appcampusgo.onrender.com",
+                        "https://localhost",
                         "http://localhost",
-                        "capacitor://localhost",
-                        "ionic://localhost"
+                        "capacitor://localhost"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
