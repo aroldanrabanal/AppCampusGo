@@ -11,9 +11,16 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://campusgo-bxo6.onrender.com", "https://appcampusgo.onrender.com")
+                .allowedOriginPatterns(
+                        "https://campusgo-bxo6.onrender.com",
+                        "https://appcampusgo.onrender.com",
+                        "http://localhost",
+                        "capacitor://localhost",
+                        "ionic://localhost"
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }
